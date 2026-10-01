@@ -1,0 +1,25 @@
+# Render Blueprint — https://render.com/docs/blueprint-spec
+# Deploy with: Render Dashboard -> New -> Blueprint -> pick this repo.
+services:
+  - type: web
+    name: telegram-release-bot
+    runtime: python
+    plan: free              # bump to "starter" for an always-on instance (see README)
+    buildCommand: pip install -r requirements.txt
+    startCommand: python bot.py
+    healthCheckPath: /
+    autoDeploy: true
+    envVars:
+      - key: MODE
+        value: webhook
+      - key: TELEGRAM_CHANNEL_ID
+        value: "@BonkerUnkilBonki"
+      # Secrets — Render prompts you for these on first deploy; nothing
+      # is stored in the repo. Fill them in the dashboard.
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: GITHUB_WEBHOOK_SECRET
+        sync: false
+      # Optional: only needed for private repos / higher GitHub rate limits.
+      - key: GITHUB_TOKEN
+        sync: false
