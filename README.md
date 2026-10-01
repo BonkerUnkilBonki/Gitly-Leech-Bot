@@ -206,3 +206,15 @@ docker run -d --env-file .env -p 8080:8080 release-bot
   cover every way you can cut a release.
 - **Multiple APKs** in one release: the first `*.apk` is sent. Set
   `ASSET_FILTER` (a regex) to pick a specific one, e.g. `ASSET_FILTER=release`.
+- **One release = one post, guaranteed.** GitHub fires several events for a
+  single release (`created`, `published`, and sometimes redeliveries). The bot
+  de-duplicates by release id, so the changelog and the APK are each sent
+  exactly once no matter how many events arrive.
+- **APK attached after publishing.** The webhook payload's asset list is often
+  empty at the instant a release is published. If no `.apk` is in the payload
+  the bot re-fetches the release from the GitHub API and keeps checking for
+  `APK_WAIT_ATTEMPTS x APK_WAIT_DELAY` seconds (default ~90s) until the asset
+  appears. This is what stops the "No matching .apk asset" false alarm.
+- **Fast 200 to GitHub.** The webhook responds immediately and does the
+  download in a background thread, so a slow upload can't make GitHub time out
+  and redeliver (which would otherwise cause duplicate posts).
